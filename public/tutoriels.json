@@ -1,0 +1,43 @@
+[
+    {
+      "id": "1",
+      "title": "Introduction à React",
+      "description": "Un tutoriel pour débuter avec React.",
+      "tags": ["react", "javascript"],
+      "author": "John Doe",
+      "type": "tutoriel",
+      "sections": [
+        { "id": "1", "title": "Installation", "content": "Instructions d’installation..." },
+        { "id": "2", "title": "Composants", "content": "Explication des composants..." }
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Développement Node.js",
+      "description": "Apprendre le développement backend avec Node.js.",
+      "tags": ["nodejs", "backend", "javascript"],
+      "author": "Jane Doe",
+      "type": "tutoriel",
+      "sections": [
+        { "id": "1", "title": "Setup", "content": "Configuration de Node.js" },
+        { "id": "2", "title": "API REST", "content": "Construction d’une API REST" }
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Le guide du développeur web",
+      "description": "Un guide pour comprendre le développement web en général",
+      "tags": ["web", "html", "css", "javascript"],
+      "author": "Jane Doe",
+      "type": "livre"
+    },
+    {
+      "id": "4",
+      "title": "Les bonnes pratiques React",
+      "description": "Un guide des bonnes pratiques de React",
+      "tags": ["react", "guide"],
+      "author": "John Doe",
+      "type": "pdf"
+    }
+  ]
+  

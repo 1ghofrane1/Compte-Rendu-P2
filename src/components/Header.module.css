@@ -1,0 +1,29 @@
+.header {
+    background-color: #001e41;
+    padding: 1rem 0;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 5px;
+  }
+  
+  .nav {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .link {
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    background: #001e41;
+    transition: background 0.3s;
+  }
+  
+  .link:hover {
+    text-decoration: underline;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
