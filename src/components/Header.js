@@ -10,6 +10,7 @@ import classNames from 'classnames';
 const Header = ({ className }) => {
     // Définition des éléments de navigation du menu
     const navItems = [
+        { href: "/profile", label: "Mon Profile" }, // Lien vers le profile
         { href: "/", label: "Accueil" }, // Lien vers la page d'accueil
         { href: "/recherche", label: "Recherche" } // Lien vers la page de recherche
     ];

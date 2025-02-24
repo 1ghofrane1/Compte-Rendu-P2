@@ -2,70 +2,120 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Link from 'next/link';
 
-/*  Ce composant HomePage affiche une liste de tutoriels récupérés depuis "tutoriels.json".
-  On utilise 'useEffect' pour effectuer un appel à l’API lors du chargement de la page et mettre à jour l'état avec les données récupérées.*/
 function HomePage() {
-  // Déclaration des états pour stocker les tutoriels, gérer le chargement et détecter les erreurs.  
-  const [tutoriels, setTutoriels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // États pour gérer les données et l'affichage
+  const [tutoriels, setTutoriels] = useState([]); // Liste des tutoriels récupérés
+  const [loading, setLoading] = useState(true); // Indique si les données sont en cours de chargement
+  const [error, setError] = useState(null); // Stocke le message d'erreur en cas de problème
+  const [selectedTag, setSelectedTag] = useState(""); // Stocke le tag sélectionné pour filtrer les tutoriels
+  const [currentPage, setCurrentPage] = useState(1); // Page actuelle pour la pagination
+  const itemsPerPage = 2; // Nombre d'éléments affichés par page
+  const [favoris, setFavoris] = useState([]); // Liste des tutoriels favoris
 
-  /*
-    useEffect :
-    - S'exécute au montage du composant (`[]` comme dépendance).
-    - Fait une requête pour récupérer les tutoriels.
-    - Gère les erreurs et met à jour l'état en conséquence.
-  */
+  // Effet pour récupérer les tutoriels depuis un fichier JSON
   useEffect(() => {
     async function fetchData() {
       try {
-        setLoading(true); // Active l’état de chargement avant la requête.
-        const response = await fetch('/tutoriels.json'); // Récupération des tutoriels depuis "tutoriels.json".
-        // Vérification du statut de la réponse.
-        if (!response.ok) {
-          throw new Error('Erreur de récupération des tutoriels');
-        }
+        setLoading(true); // Active l'indicateur de chargement
+        const response = await fetch('/tutoriels.json'); // Requête pour récupérer les données
+        if (!response.ok) throw new Error('Erreur de récupération des tutoriels');
         const data = await response.json();
-        setTutoriels(data); // Mise à jour des tutoriels avec les tutoriels récupérés.
-        setError(null); // Réinitialisation de l’erreur si la récupération réussit.
+        setTutoriels(data); // Mise à jour de l'état avec les données récupérées
+        setError(null); // Réinitialise le message d'erreur si tout va bien
       } catch (err) {
-        setError(err.message); // Stocke le message d’erreur en cas d’échec.
+        setError(err.message); // Stocke le message d'erreur pour affichage
       } finally {
-        setLoading(false); // Désactive l’état de chargement, quelle que soit l'issue.
+        setLoading(false); // Désactive l'indicateur de chargement
       }
     }
-    fetchData(); // On appelle la fonction pour récupérer les données au chargement du composant.
+    fetchData(); // Appel de la fonction pour récupérer les données
+  }, []); // S'exécute une seule fois au montage du composant
+
+  // Effet pour récupérer les favoris stockés dans le localStorage
+  useEffect(() => {
+    const savedFavoris = JSON.parse(localStorage.getItem('favoris')) || [];
+    setFavoris(savedFavoris); // Charge les favoris stockés dans le state
   }, []);
 
-   // Affichage conditionnel selon l’état du chargement et des erreurs.
-   if (loading) {
-    return <p>Chargement des tutoriels...</p>; // Si les données ne sont pas encore disponibles, on affiche un message de chargement.
-  }
-  if (error) {
-    return <p>Erreur: {error}</p>; // Affiche un message d'erreur en cas de problème/erreur.
-  }
-  if (!tutoriels || tutoriels.length === 0) {
-    return <p>Aucun tutoriel trouvé.</p>; // Affiche un message si la liste est vide.
-  }
+  // Fonction pour ajouter ou supprimer un tutoriel des favoris
+  const toggleFavori = (id) => {
+    let newFavoris = favoris.includes(id)
+      ? favoris.filter(fav => fav !== id) // Supprime si déjà favori
+      : [...favoris, id]; // Ajoute sinon
+    setFavoris(newFavoris); // Met à jour l'état
+    localStorage.setItem('favoris', JSON.stringify(newFavoris)); // Stocke dans localStorage
+  };
+
+  // Extraction des tags uniques pour filtrer les tutoriels
+  const uniqueTags = [...new Set(tutoriels.flatMap(t => t.tags || []))];
+
+  // Filtrage des tutoriels selon le tag sélectionné
+  const filteredTutoriels = selectedTag
+    ? tutoriels.filter(tutoriel => tutoriel.tags?.includes(selectedTag))
+    : tutoriels;
+
+  // Gestion de la pagination
+  const indexOfLastItem = currentPage * itemsPerPage; // Dernier élément affiché
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage; // Premier élément affiché
+  const currentItems = filteredTutoriels.slice(indexOfFirstItem, indexOfLastItem); // Découpe la liste
+  const totalPages = Math.ceil(filteredTutoriels.length / itemsPerPage); // Nombre total de pages
+
+  // Affichage d'un message si les données sont en cours de chargement ou si une erreur est survenue
+  if (loading) return <p>Chargement...</p>;
+  if (error) return <p>Erreur: {error}</p>;
+
   return (
     <div>
       <Header />
       <h1>Tutoriels et Ressources</h1>
+
+      {/* Sélecteur pour filtrer les tutoriels par tag */}
+      <label>Filtrer par tag :</label>
+      <select onChange={(e) => setSelectedTag(e.target.value)}>
+        <option value="">Tous</option>
+        {uniqueTags.map(tag => (
+          <option key={tag} value={tag}>{tag}</option>
+        ))}
+      </select>
+
+      {/* Liste des tutoriels */}
       <ul>
-        {tutoriels.map((tutoriel) => (
+        {currentItems.map(tutoriel => (
           <li key={tutoriel.id}>
-            {/* Vérifie si l'élément est un tutoriel ou un autre type de ressource */}
-            {tutoriel.type === 'tutoriel' ? (
-              /* Si c'est un tutoriel, affiche un lien vers sa page */
-              <Link href={`/tutoriels/${tutoriel.id}`}>{tutoriel.title}</Link>
+            <Link href={`/tutoriels/${tutoriel.id}`}>{tutoriel.title}</Link>
+            
+            {/* Bouton favoris selon le type du tutoriel */}
+            {tutoriel.type === "tutoriel" ? (
+              <button 
+                onClick={() => toggleFavori(tutoriel.id)}
+                style={{
+                  background: favoris.includes(tutoriel.id) ? "#dc3545" : "#28a745", // Rouge si favori, vert sinon
+                  color: "white",
+                }}
+              >
+                {favoris.includes(tutoriel.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+              </button>
             ) : (
-              /* Sinon, affiche simplement son titre et son type */
-              <>{tutoriel.title} ({tutoriel.type})</>
+              <button disabled style={{ background: "#6c757d", color: "white", cursor: "not-allowed" }}>
+                Ce n'est pas un tutoriel
+              </button>
             )}
           </li>
         ))}
       </ul>
+
+      {/* Pagination */}
+      <div>
+        <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
+          Précédent
+        </button>
+        <span> Page {currentPage} / {totalPages} </span>
+        <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
+          Suivant
+        </button>
+      </div>
     </div>
   );
 }
+
 export default HomePage;
